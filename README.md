@@ -10,6 +10,73 @@ It includes:
 - Seed data for local testing.
 - Supabase Edge Functions for business logic (like chat orchestration and mock AI profile extraction).
 
+## Database Architecture
+Below is the Entity Relationship Diagram (ERD) representing the core backend models.
+
+```mermaid
+erDiagram
+    profiles ||--|| job_seekers : "is a"
+    profiles ||--o{ organization_members : "belongs to"
+    profiles ||--o{ audit_logs : "creates"
+    profiles ||--o{ notifications : "receives"
+    
+    organizations ||--o{ organization_members : "has"
+    organizations ||--o{ jobs : "posts"
+    organizations ||--o{ organization_verifications : "verified by"
+    organizations ||--o{ routing_decisions : "assigned to"
+    
+    verification_badges ||--o{ organization_verifications : "applied to"
+    
+    job_seekers ||--o{ job_seeker_credentials : "holds"
+    job_seekers ||--o{ chat_sessions : "starts"
+    job_seekers ||--o{ profile_extractions : "extracted for"
+    job_seekers ||--o{ applications : "applies"
+    job_seekers ||--o{ candidate_matches : "matched to"
+    job_seekers ||--o{ routing_decisions : "routed"
+    
+    jobs ||--o{ job_requirements : "requires"
+    jobs ||--o{ applications : "receives"
+    jobs ||--o{ candidate_matches : "matches"
+    
+    chat_sessions ||--o{ chat_messages : "contains"
+    chat_sessions ||--o{ profile_extractions : "source of"
+
+    profiles {
+        uuid id PK
+        user_role role
+        text full_name
+        text email
+    }
+    organizations {
+        uuid id PK
+        text name
+        text slug
+        organization_type type
+        boolean is_verified
+    }
+    job_seekers {
+        uuid id PK, FK
+        text summary
+        text[] skills
+        int experience_years
+        geography location_coords
+        vector embedding
+    }
+    jobs {
+        uuid id PK
+        uuid organization_id FK
+        text title
+        geography location_coords
+        boolean is_active
+    }
+    applications {
+        uuid id PK
+        uuid job_id FK
+        uuid job_seeker_id FK
+        text status
+    }
+```
+
 ## Features / Current Scope
 - **Job Seeker Domain:** Automated chat onboarding models and profile extraction.
 - **Employer Domain:** Organization management, verification badges, and job posting models.
